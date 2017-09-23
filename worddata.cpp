@@ -4,7 +4,7 @@
 
 WordData::WordData()
 {
-    remNumber = 0;
+    memoryNumber = 0;
     wordName = "";
 
 }
@@ -21,7 +21,7 @@ void WordData::setParaphraseFromLocal(const QString &paraphraseStr)
 
 void WordData::setRemFromLocal(int remInt)
 {
-    remNumber = remInt;
+    memoryNumber = remInt;
 }
 
 QStringList &WordData::getPhonetic()
@@ -39,14 +39,14 @@ QString &WordData::getWordName()
     return wordName;
 }
 
-int WordData::getRem()
+int WordData::getMemoryNumber()
 {
-    return remNumber;
+    return memoryNumber;
 }
 
-void WordData::addRem(int temp)
+void WordData::addMemoryNumber(int temp)
 {
-    remNumber +=temp;
+    memoryNumber +=temp;
 }
 
 void WordData::queryNet()
@@ -64,7 +64,7 @@ void WordData::queryNet()
 
 bool WordData::flagQuery()
 {
-    return remNumber!=0;
+    return memoryNumber!=0;
 }
 
 void WordData::setWordName(const QString &name)

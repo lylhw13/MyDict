@@ -10,13 +10,18 @@
 #include <QTextTableFormat>
 
 
-DisplayWindow::DisplayWindow(QWidget *parent) : QWidget(parent)
+DisplayWindow::DisplayWindow(WordLocalDB *localDB, QWidget *parent) : QWidget(parent)
 {
+    this->localDB = localDB;
+
     QVBoxLayout *mainLayout = new QVBoxLayout;
 
+//    QHBoxLayout *settingLayout = new QHBoxLayout;
+//    QPushButton *setButton = new QPushButton(QIcon(":/icons/settings.png"),tr(""),this);
+//    settingLayout->addStretch(1);
+//    settingLayout->addWidget(setButton);
+//    mainLayout->addLayout(settingLayout);
     QHBoxLayout *showLayout = new QHBoxLayout;
-
-
     //display label
     displayLabel = new ClickableLabel(tr("display"));
     QFont font;
@@ -38,7 +43,6 @@ DisplayWindow::DisplayWindow(QWidget *parent) : QWidget(parent)
     displayContent->setFixedSize(350,200);
     displayContent->hide();
 
-
     //button
     QPushButton *previousButton = new QPushButton(QIcon(":/icons/previous.png"),tr(""),this);
     QPushButton *nextButton = new QPushButton(QIcon(":/icons/next.png"),tr(""),this);
@@ -55,27 +59,39 @@ DisplayWindow::DisplayWindow(QWidget *parent) : QWidget(parent)
 
     //markLayout
     QHBoxLayout *markLayout = new QHBoxLayout;
-    QPushButton *notKnownButton = generateButton(tr("Not Known"),QColor(219,76,79),this);
-    QPushButton *unfamiliarButton = generateButton(tr("Unfamiliar"),QColor(236,180,33),this);
-    QPushButton *familiarButton = generateButton(tr("Familiar"),QColor(83,167,92),this);
+    notKnownButton = generateButton(tr("Not Known"),QColor(219,76,79),this);
+    unfamiliarButton = generateButton(tr("Unfamiliar"),QColor(236,180,33),this);
+    familiarButton = generateButton(tr("Familiar"),QColor(83,167,92),this);
     markLayout->addWidget(notKnownButton);
     markLayout->addWidget(unfamiliarButton);
     markLayout->addWidget(familiarButton);
     mainLayout->addLayout(markLayout);
 
+    mainLayout->addStretch(1);
+
     setLayout(mainLayout);
 
     //connect
-    connect(previousButton,SIGNAL(clicked(bool)),this,SLOT(previousButtonSlot()));
-    connect(nextButton,SIGNAL(clicked(bool)),this,SLOT(nextButtonSlot()));
-
     connect(displayLabel,SIGNAL(pressed()),this,SLOT(labelPressedSlot()));
     connect(displayLabel,SIGNAL(released()),this,SLOT(labelReleaseSlot()));
 
+    connect(previousButton,SIGNAL(clicked(bool)),this,SLOT(previousButtonSlot()));
+    connect(nextButton,SIGNAL(clicked(bool)),this,SLOT(nextButtonSlot()));
+
+    connect(notKnownButton,SIGNAL(clicked(bool)),this,SLOT(notKnownButtonSlot()));
+    connect(unfamiliarButton,SIGNAL(clicked(bool)),this,SLOT(unfamiliarButtonSlot()));
+    connect(familiarButton,SIGNAL(clicked(bool)),this,SLOT(familiarButtonSlot()));
+
     lastWord = "";
+    isJudged = false;
     displayWord = new WordData;
-    localDB = new WordLocalDB();
+//    localDB = new WordLocalDB();
+    timer = new QTimer(this);
+    connect(timer,SIGNAL(timeout()),this,SLOT(nextButtonSlot()));
+    timer->start(400000);//10s
     nextButtonSlot();
+    //setFixedSize(430,350);
+    setFixedWidth(430);
 }
 
 QPushButton *DisplayWindow::generateButton(QString &name, QColor &color, QWidget *parent)
@@ -90,6 +106,11 @@ QPushButton *DisplayWindow::generateButton(QString &name, QColor &color, QWidget
 //    button->update();
     QSize originalSize = button->sizeHint();
     button->setMinimumHeight( 2 * originalSize.height());
+
+
+    //if want to set the backgoround-color to transparent, write as follows:
+//    color.setAlpha(150);
+//    QString style = tr("QPushButton {background-color: ") + color.name(QColor::HexArgb)+tr("; font-family: consolas; font-size: 18pt; font-weight: bold;color: #ffffff;}");
 
     QString style = tr("QPushButton {background-color: ") + color.name()+tr("; font-family: consolas; font-size: 18pt; font-weight: bold;color: #ffffff;}");
     button->setStyleSheet(style);
@@ -164,22 +185,24 @@ void DisplayWindow::fillContent()
 
 }
 
+void DisplayWindow::setTimer(bool flag)
+{
+    if(flag)
+        timer->start(10000);
+    else
+        timer->stop();
+}
+
 void DisplayWindow::nextButtonSlot()
 {
-//    if(!lastWord.isEmpty())
-//        previousWordStack.push(lastWord);
-
     if(nextWordStack.isEmpty())
     {
         if(!localDB->randowQueryWord(displayWord))
             return;
-//        if(!displayWord->getWordName().isEmpty())
-//            previousWordStack.push_back(displayWord->getWordName());
     }
     else
     {
         QString nextWord = nextWordStack.pop();
-//        previousWordStack.push_back(nextWord);
 
         if(!localDB->queryWord(nextWord,displayWord))
             return;
@@ -195,9 +218,10 @@ void DisplayWindow::nextButtonSlot()
     if(previousWordStack.count()>5)
         previousWordStack.pop_front();
 
-    displayContent->hide();    
+    displayContent->hide();
     displayLabel->setText(displayWord->getWordName());
     displayLabel->show();
+    isJudged = false;
 }
 
 void DisplayWindow::previousButtonSlot()
@@ -218,9 +242,10 @@ void DisplayWindow::previousButtonSlot()
         nextWordStack.push(lastWord);
     lastWord = displayWord->getWordName();
 
-    displayContent->hide();    
+    displayContent->hide();
     displayLabel->setText(displayWord->getWordName());
     displayLabel->show();
+    isJudged = false;
 }
 
 void DisplayWindow::labelPressedSlot()
@@ -235,5 +260,30 @@ void DisplayWindow::labelReleaseSlot()
     displayLabel->hide();
     fillContent();
     displayContent->show();
+}
+
+void DisplayWindow::notKnownButtonSlot()
+{
+    if(isJudged)
+        return;
+    displayWord->addMemoryNumber(-1);
+    localDB->update(displayWord);
+    labelReleaseSlot();//show content
+}
+
+void DisplayWindow::unfamiliarButtonSlot()
+{
+    if(isJudged)
+        return;
+    labelReleaseSlot();
+}
+
+void DisplayWindow::familiarButtonSlot()
+{
+    if(isJudged)
+        return;
+    displayWord->addMemoryNumber(1);
+    localDB->update(displayWord);
+    nextButtonSlot();
 }
 

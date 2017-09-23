@@ -14,7 +14,7 @@ public:
     WordData();
 private:
     QString wordName;
-    int remNumber;
+    int memoryNumber;
     QStringList phonetic;
     QStringList paraphrase;
 
@@ -25,8 +25,10 @@ public:
     QStringList & getPhonetic();
     QStringList & getParaphrase();
     QString &getWordName();
-    int getRem();
-    void addRem(int);
+
+    int getMemoryNumber();
+    void addMemoryNumber(int);
+
     bool flagQuery();
     void setWordName(const QString &);
     //bool queryLocal();

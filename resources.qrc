@@ -2,5 +2,13 @@
     <qresource prefix="/">
         <file>icons/next.png</file>
         <file>icons/previous.png</file>
+        <file>icons/settings.png</file>
+        <file>icons/arrow_left.png</file>
+        <file>icons/arrow_right.png</file>
+        <file>icons/query.png</file>
+        <file>qss/queryWindow.qss</file>
+        <file>icons/arrow_left_blue.png</file>
+        <file>icons/arrow_right_blue.png</file>
+        <file>icons/line.png</file>
     </qresource>
 </RCC>

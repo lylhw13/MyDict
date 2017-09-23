@@ -16,8 +16,26 @@ public:
 
     void createActions();
     void createMenu();
+
+    void initVariable();
+    void synchronizeMenu();
 private:
+    DisplayWindow *displayWin;
+    QueryWindow *queryWin;
+    bool displayShow;
+    bool queryShow;
+
+    WordLocalDB *localDB;
+
     QAction *exitAct;
+    QAction *displayAct;
+    QAction *queryAct;
+
+
+
+private slots:
+    void displayMenuClicked();
+    void queryMenuClicked();
 };
 
 #endif // MAINWINDOW_H

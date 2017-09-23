@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QTextEdit>
+#include <QTimer>
 
 #include "wordData.h"
 #include "wordlocaldb.h"
@@ -13,13 +14,14 @@ class DisplayWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DisplayWindow(QWidget *parent = 0);
+    explicit DisplayWindow(WordLocalDB *localDB ,QWidget *parent = 0);
 
     QPushButton *generateButton(QString &name, QColor &color, QWidget *parent = 0);
 
 
     QWidget *genContentWidget();
     void fillContent();
+    void setTimer(bool);
 
     WordData *displayWord;
 
@@ -28,9 +30,17 @@ private:
     ClickableLabel *displayLabel;
     WordLocalDB *localDB;
 
+    QPushButton *notKnownButton;
+    QPushButton *unfamiliarButton;
+    QPushButton *familiarButton;
+
     QStack<QString> previousWordStack;
     QStack<QString> nextWordStack;
     QString lastWord;
+
+    bool isJudged;
+
+    QTimer *timer;
 
 private:
 
@@ -41,6 +51,10 @@ public slots:
     void previousButtonSlot();
     void labelPressedSlot();
     void labelReleaseSlot();
+
+    void notKnownButtonSlot();//remember number minus 1
+    void unfamiliarButtonSlot();//show the meaning
+    void familiarButtonSlot();//remember number plus 1
 
 };
 

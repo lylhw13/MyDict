@@ -26,7 +26,7 @@ void WordLocalDB::addWord(WordData * wordData)
     q.prepare("insert into dict (word, remember, phonetic, paraphrase) values(?,?,?,?)");
 
     q.addBindValue(wordData->getWordName());
-    q.addBindValue(QString::number(wordData->getRem()));
+    q.addBindValue(QString::number(wordData->getMemoryNumber()));
     q.addBindValue(wordData->getPhonetic().join("$"));
     q.addBindValue(wordData->getParaphrase().join("$"));
     if(!q.exec())
@@ -46,7 +46,7 @@ void WordLocalDB::update(WordData *wordData)
 //    q.bindValue(":word",wordData->getWordName());
 //    if(!q.exec())
 //        qDebug()<<q.lastError();
-    QString temp = QString("update dict set remember = %1 where word = \'%2\'").arg(wordData->getRem()).arg(wordData->getWordName());//注意要加单引号
+    QString temp = QString("update dict set remember = %1 where word = \'%2\'").arg(wordData->getMemoryNumber()).arg(wordData->getWordName());//注意要加单引号
     if(!q.exec(temp))
         qDebug()<<q.lastError();
 }
